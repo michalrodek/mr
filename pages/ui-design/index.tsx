@@ -1,45 +1,22 @@
 import Head from "next/head";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Card from "./card";
-import { AnimatePresence, motion, useAnimation } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import router from "next/router";
 
-export default function Portfolio({ data }) {
+interface ImageProps {
+  id: number;
+  name: string;
+  img: string;
+}
+
+interface PortfolioProps {
+  data: ImageProps[];
+}
+
+export default function Portfolio(props: PortfolioProps) {
   const [enlarge, setEnlarge] = useState(false);
   const [image, setImage] = useState("");
-  const imgRef = useRef<HTMLImageElement>();
-  const controls = useAnimation();
-  const canClose = useRef(false);
-  const rect = useRef<DOMRect>();
-
-  const handleLoad = async () => {
-    await controls.start((i) => ({
-      left: "50%",
-      top: "50%",
-      transform: "translate(-50%, -50%)",
-      bottom: 0,
-      height: "auto",
-      width: "auto",
-      borderRadius: 0,
-    }));
-
-    canClose.current = true;
-  };
-
-  useEffect(() => {
-    if (!enlarge) return;
-  }, [enlarge]);
-
-  const handleClose = () => {
-    if (!canClose.current) return;
-
-    canClose.current = false;
-    setEnlarge(false);
-  };
-
-  const setRef = (ref: HTMLImageElement) => {
-    imgRef.current = ref;
-    rect.current = imgRef.current.getBoundingClientRect();
-  };
 
   return (
     <>
@@ -57,7 +34,7 @@ export default function Portfolio({ data }) {
           }}
           className="grid gap-12"
         >
-          {data.map((card) => {
+          {props.data.map((card) => {
             return (
               <Card
                 key={card.id}
@@ -65,56 +42,19 @@ export default function Portfolio({ data }) {
                 name={card.name}
                 setEnlarge={setEnlarge}
                 setImage={setImage}
-                setRef={setRef}
+                id={card.id}
               />
             );
           })}
         </div>
       </div>
-      <AnimatePresence>
-        {enlarge && (
-          <motion.div
-            style={{
-              position: "fixed",
-              height: "100%",
-              width: "100%",
-              top: 0,
-              left: 0,
-            }}
-            animate={{ background: "rgba(0, 0, 0, 0.8)" }}
-            transition={{ duration: 0.3 }}
-            onClick={handleClose}
-            exit={{ background: "rgba(0, 0, 0, 0)" }}
-          >
-            <motion.img
-              onClick={(e) => e.stopPropagation()}
-              onLoad={handleLoad}
-              transition={{ type: "spring", duration: 0.5 }}
-              src={`/me/ui/${image}.png`}
-              style={{
-                position: "absolute",
-                maxWidth: "90%",
-                maxHeight: "90%",
-              }}
-              initial={{
-                width: rect.current.width,
-                height: rect.current.height,
-                left: rect.current.left,
-                top: rect.current.top,
-              }}
-              animate={controls}
-              exit={{
-                width: rect.current.width,
-                height: rect.current.height,
-                left: rect.current.left,
-                top: rect.current.top,
-                borderRadius: "10px 10px 0 0",
-                transform: "translate(0%, 0%)",
-              }}
-            ></motion.img>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Preview
+        image={image}
+        enlarge={enlarge}
+        data={props.data}
+        setEnlarge={setEnlarge}
+        setImage={setImage}
+      />
     </>
   );
 }
@@ -125,3 +65,87 @@ export async function getServerSideProps() {
 
   return { props: { data: data.reverse() } };
 }
+
+interface PreviewProps {
+  image: string;
+  enlarge: boolean;
+  data: ImageProps[];
+  setEnlarge: Dispatch<SetStateAction<boolean>>;
+  setImage: Dispatch<SetStateAction<string>>;
+}
+
+const Preview = (props: PreviewProps) => {
+  const handleClose = () => {
+    props.setEnlarge(false);
+    router.back();
+  };
+
+  useEffect(() => {
+    router.beforePopState((historyState) => {
+      if (!historyState.as.includes("ui-design")) return true;
+
+      if (historyState.as !== "/me/ui-design/") {
+        const imageId = historyState.as.match(/ui-design\/.*?([0-9]+)/)[1];
+        const bar = props.data.find((foo) => foo.id.toString() === imageId);
+        props.setImage(bar.img);
+        props.setEnlarge(true);
+      }
+
+      if (historyState.as === "/me/ui-design/") {
+        props.setEnlarge(false);
+      }
+
+      if (historyState.url !== "/me/ui-design/") {
+        return false;
+      }
+
+      return true;
+    });
+  }, []);
+
+  return (
+    <AnimatePresence>
+      {props.enlarge && (
+        <motion.div
+          style={{
+            position: "fixed",
+            height: "100%",
+            width: "100%",
+            top: 0,
+            left: 0,
+            display: "flex",
+          }}
+          animate={{ background: "rgba(0, 0, 0, 0.8)" }}
+          onClick={handleClose}
+          exit={{ background: "rgba(0, 0, 0, 0)" }}
+        >
+          <motion.div
+            style={{
+              position: "relative",
+              height: "90%",
+              width: "90%",
+              margin: "auto",
+              display: "flex",
+              scale: 0,
+              opacity: 0,
+            }}
+            animate={{
+              scale: 1,
+              opacity: 1,
+            }}
+            exit={{
+              scale: 0.3,
+              opacity: 0,
+            }}
+          >
+            <img
+              onClick={(e) => e.stopPropagation()}
+              src={`/me/ui/${props.image}.png`}
+              className="m-auto max-h-full"
+            ></img>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};

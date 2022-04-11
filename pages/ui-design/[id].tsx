@@ -1,50 +1,42 @@
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { getFiles } from "../../utils/paths";
+import { useEffect, useState } from "react";
 
-export default function Id({ data }) {
+export default function Id() {
   const router = useRouter();
+  const [image, setImage] = useState(null);
 
-  if (router.query.id) {
-    return (
-      <>
-        <Head>
-          <title>Michal Rodek</title>
-          <meta
-            name="viewport"
-            content="initial-scale=1.0, width=device-width"
-          />
-        </Head>
-        <img
-          style={{ width: "100%" }}
-          src={`/me/ui/${router.query.id}.png`}
-        ></img>
-      </>
-    );
-  } else {
-    return "";
-  }
-}
+  useEffect(() => {
+    if (!router.query.id) return;
 
-export async function getStaticPaths() {
-  const files = await getFiles();
+    const fetchData = async () => {
+      const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/images`);
+      const data = await resp.json();
 
-  const paths = files.map((file) => {
-    const name = file.replace(".png", "");
+      const arr = (router.query.id as string).split("-");
+      const id = arr[arr.length - 1];
 
-    return { params: { id: name } };
-  });
+      const image = data.find((image) => {
+        if (image.id == id) {
+          return true;
+        }
+      });
 
-  return {
-    paths: paths,
-    fallback: false,
-  };
-}
+      setImage(image);
+    };
 
-export async function getStaticProps({ params }) {
-  return {
-    props: {
-      data: params.id,
-    },
-  };
+    fetchData();
+  }, [router.query.id]);
+
+  if (!image) return null;
+
+  return (
+    <>
+      <Head>
+        <title>Michal Rodek</title>
+        <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+      </Head>
+      <img src={`/me/ui/${image?.img}.png`}></img>
+    </>
+  );
 }

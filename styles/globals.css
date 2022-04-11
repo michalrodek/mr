@@ -85,15 +85,7 @@ a {
     font-size: 16px;
   }
 
-  body {
-    background: var(--background);
-  }
-
   .layout {
     grid-template-columns: 5% auto 5%;
-  }
-
-  main {
-    background: var(--main-background);
   }
 }

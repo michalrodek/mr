@@ -59,7 +59,7 @@ export default function Contact() {
         <title>Kontakt | Michal Rodek</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <div className="flex flex-col gap-40 md:flex-row md:items-center md:justify-center md:flex-auto">
+      <div className="flex flex-col gap-12 md:gap-40 md:flex-row md:items-center md:justify-center md:flex-auto">
         <h1 className="text-3xl font-poppins font-bold text-center text-primary-800 dark:text-primary-300">
           Zanech mi zprávu
         </h1>
@@ -75,7 +75,6 @@ export default function Contact() {
               E-MAIL
             </label>
             <input
-              style={{ background: "#edf3fd" }}
               className="rounded-xl p-4 w-full dark:text-primary-900 bg-primary-100"
               id="email"
               onChange={(e) => setEmail(e.currentTarget.value)}

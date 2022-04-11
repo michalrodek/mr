@@ -31,7 +31,7 @@ export default function Home() {
         <title>Michal Rodek</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
-      <div className="flex flex-col gap-40 md:flex-row md:flex-auto justify-center items-center">
+      <div className="flex flex-col gap-12 md:gap-40 md:flex-row md:flex-auto justify-center items-center">
         <div className="flex justify-center">
           <img
             src="/me/pic.png"
@@ -43,7 +43,7 @@ export default function Home() {
         </div>
         <div
           style={{ color: "var(--text)" }}
-          className="flex flex-col items-center max-w-md gap-14"
+          className="flex flex-col items-center max-w-md gap-8 md:gap-14"
         >
           <div className="md:self-start md:gap-2 md:flex md:flex-col">
             <span className="text-xs font-poppins font-bold md:text-sm">
